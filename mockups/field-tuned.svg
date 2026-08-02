@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Defensive Positioning Assistant — Tuned field mockup
+  ============================
+  ViewBox is 0..100 on both axes so SVG coordinates ARE the data coordinates
+  the recommendation engine consumes. Every shape below is positioned to
+  match what js/utils.js and js/recommendations.js already expect:
+
+    Dirt-diamond polygon (zoneLabel):   (50,39) (76,62) (50,84) (21,62)
+    Mound center / radius (zoneLabel):  (50, 65), r=9
+    LF / CF / RF split (zoneLabel):     x=38 / x=62
+    L / M / R AI split (renderSmart..): x=40 / x=60
+    Deep contact threshold:             y < 38 (extra y<30 bonus)
+
+  Open this file directly in a browser to preview. It is intentionally
+  square so the geometry reads cleanly — the live #field would be embedded
+  in a tall container, so before shipping we'd either letterbox to square
+  OR pick a fixed aspect (e.g. 100 wide x 130 tall) and recompute thresholds.
+-->
+<svg xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 100 100"
+     preserveAspectRatio="xMidYMid meet"
+     width="390" height="390"
+     role="img" aria-label="Defensive Positioning Assistant tuned field mockup">
+
+  <!-- Foul territory: dark navy background. Stops coaches from
+       confusing fair vs foul at a glance. -->
+  <rect x="0" y="0" width="100" height="100" fill="#0a1a28"/>
+
+  <!-- Fair territory wedge.
+       Home plate at (50, 84) extends through 1B (76, 62) and 3B (21, 62)
+       to the outfield fence. Foul-line corners land at the left/right
+       edges around y=42 when projected from home through the corner bases. -->
+  <path d="M 50 84
+           L 50 84
+           Q 6 50  6 38
+           Q 50 -4 94 38
+           Q 94 50 50 84 Z"
+        fill="#1f7a36"/>
+
+  <!-- Outfield "fence" arc — subtle, just to suggest depth. -->
+  <path d="M 6 38 Q 50 -4 94 38"
+        fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="0.4"/>
+
+  <!-- Mowing arcs (faint, optional flavor). -->
+  <path d="M 18 62 Q 50 18 82 62"
+        fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="0.35"/>
+  <path d="M 12 56 Q 50 6 88 56"
+        fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="0.35"/>
+
+  <!-- AI zone guides at x=40 and x=60.
+       These are the L / M / R thresholds the recommendation engine uses.
+       Faint enough to not dominate, visible enough that a coach
+       can see roughly where "up the middle" ends. -->
+  <line x1="40" y1="6"  x2="40" y2="84"
+        stroke="rgba(255,255,255,0.10)" stroke-width="0.3" stroke-dasharray="0.8 1.4"/>
+  <line x1="60" y1="6"  x2="60" y2="84"
+        stroke="rgba(255,255,255,0.10)" stroke-width="0.3" stroke-dasharray="0.8 1.4"/>
+
+  <!-- Deep-contact horizontal guide at y=30 (the deep-outfield bonus line). -->
+  <line x1="10" y1="30" x2="90" y2="30"
+        stroke="rgba(255,255,255,0.07)" stroke-width="0.3" stroke-dasharray="0.8 1.4"/>
+
+  <!-- Outfield zone labels — small, low-opacity, oriented for a coach
+       reading the field from the home-plate side. -->
+  <text x="22" y="20" font-family="system-ui, sans-serif" font-size="3.6"
+        fill="rgba(255,255,255,0.55)" text-anchor="middle"
+        font-weight="600" letter-spacing="0.4">LF</text>
+  <text x="50" y="14" font-family="system-ui, sans-serif" font-size="3.6"
+        fill="rgba(255,255,255,0.55)" text-anchor="middle"
+        font-weight="600" letter-spacing="0.4">CF</text>
+  <text x="78" y="20" font-family="system-ui, sans-serif" font-size="3.6"
+        fill="rgba(255,255,255,0.55)" text-anchor="middle"
+        font-weight="600" letter-spacing="0.4">RF</text>
+
+  <!-- Foul lines — bright white. From home (50, 84) extended through
+       each corner base to the outfield fence. -->
+  <line x1="50" y1="84" x2="6"  y2="38"
+        stroke="#ffffff" stroke-width="0.7" stroke-linecap="round"/>
+  <line x1="50" y1="84" x2="94" y2="38"
+        stroke="#ffffff" stroke-width="0.7" stroke-linecap="round"/>
+
+  <!-- Dirt infield diamond — EXACTLY the zoneLabel polygon vertices
+       so the painted dirt = the area the code treats as "infield". -->
+  <path d="M 50 39 L 76 62 L 50 84 L 21 62 Z"
+        fill="#c89561" stroke="rgba(255,255,255,0.55)" stroke-width="0.4"/>
+
+  <!-- Inner grass diamond between the baselines (slightly inset from dirt). -->
+  <path d="M 50 49 L 67 62 L 50 77 L 33 62 Z"
+        fill="#1f7a36" stroke="rgba(255,255,255,0.5)" stroke-width="0.35"/>
+
+  <!-- Baselines — thin white lines tracing the basepath corners. -->
+  <path d="M 50 49 L 67 62 L 50 77 L 33 62 Z"
+        fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="0.35"/>
+
+  <!-- Pitcher's mound at (50, 65) — matches zoneLabel mound center.
+       Radius is visually small but the trigger zone in code is r=9. -->
+  <circle cx="50" cy="65" r="3" fill="#a76a35"
+          stroke="rgba(255,255,255,0.45)" stroke-width="0.3"/>
+
+  <!-- Bases — white squares rotated 45° at basepath corners. -->
+  <!-- 2B at (50, 49) -->
+  <rect x="48.5" y="47.5" width="3" height="3" fill="#ffffff"
+        transform="rotate(45 50 49)"/>
+  <!-- 1B at (67, 62) -->
+  <rect x="65.5" y="60.5" width="3" height="3" fill="#ffffff"
+        transform="rotate(45 67 62)"/>
+  <!-- 3B at (33, 62) -->
+  <rect x="31.5" y="60.5" width="3" height="3" fill="#ffffff"
+        transform="rotate(45 33 62)"/>
+  <!-- Home plate pentagon at (50, 82) -->
+  <polygon points="47.8,80 52.2,80 52.2,82 50,84 47.8,82" fill="#ffffff"/>
+
+  <!-- ────────────────────────────────────────────────────────────
+       Calibration markers (REMOVE BEFORE SHIPPING).
+       These show where the code's coordinate buckets actually land.
+       Useful for verifying the SVG aligns with the math.
+       ──────────────────────────────────────────────────────────── -->
+  <g opacity="0.85">
+    <!-- LF/CF/RF display-label boundaries from zoneLabel (x=38, x=62) -->
+    <line x1="38" y1="6" x2="38" y2="38"
+          stroke="#f4c542" stroke-width="0.2" stroke-dasharray="0.5 0.8"/>
+    <line x1="62" y1="6" x2="62" y2="38"
+          stroke="#f4c542" stroke-width="0.2" stroke-dasharray="0.5 0.8"/>
+    <!-- Mound trigger circle (r=9 from zoneLabel) -->
+    <circle cx="50" cy="65" r="9" fill="none"
+            stroke="#f4c542" stroke-width="0.15" stroke-dasharray="0.5 0.8"/>
+  </g>
+</svg>

@@ -1,0 +1,15 @@
+{
+  "name": "defensive-positioning-assistant",
+  "version": "1.0.0",
+  "description": "Defensive Positioning Assistant - Mobile-first baseball defensive analytics web application",
+  "private": true,
+  "scripts": {
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "test:all": "npm run test && npm run test:e2e"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.44.0",
+    "vitest": "^2.0.0"
+  }
+}

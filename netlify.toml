@@ -1,0 +1,35 @@
+# Defensive Positioning Assistant — Netlify Configuration
+# https://docs.netlify.com/configure-builds/file-based-configuration/
+
+[build]
+  # Directory containing the static site files to deploy
+  publish = "."
+  # No build command required — this is a static site
+  command = ""
+  # Netlify Functions source directory
+  functions = "netlify/functions"
+
+[dev]
+  # Local development port
+  port = 8888
+  # Serve the static files from the project root
+  targetPort = 3000
+  # Load environment variables from .env during local dev
+  envFile = ".env"
+
+# Redirect all API calls through Netlify Functions
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+# Security headers applied to all responses
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=()"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://static.memberstack.com; style-src 'self' 'unsafe-inline' https://fonts.bunny.net https://static.memberstack.com; img-src 'self' data: blob: https://ms-application-assets.s3.amazonaws.com; connect-src 'self' https://*.memberstack.com https://*.memberstack.io; font-src 'self' data: https://fonts.bunny.net; frame-src 'none'; object-src 'none'; base-uri 'self';"
