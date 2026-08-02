@@ -21,6 +21,7 @@ defensive-positioning-assistant/
 │   ├── recommendations.js
 │   ├── ai.js
 │   ├── roster-import.js
+│   ├── play-log-import.js
 │   ├── batter.js
 │   ├── spray-charts.js
 │   ├── utils.js
@@ -28,6 +29,7 @@ defensive-positioning-assistant/
 ├── netlify/
 │   └── functions/
 │       ├── openai-roster-import.js
+│       ├── openai-play-log-import.js
 │       └── ai-coach-brief.js
 ├── tests/
 │   ├── unit/
@@ -37,6 +39,7 @@ defensive-positioning-assistant/
 ├── netlify.toml
 ├── package.json
 ├── README.md
+├── CASE_STUDY.md
 ├── CLAUDE.md
 ├── PROGRESS.md
 ├── ARCHITECTURE.md
@@ -78,7 +81,7 @@ defensive-positioning-assistant/
 | `memberstack.js`      | Auth integration and `showScreen` auth guard                         |
 | `batter.js`           | Compact batter strip + touch-swipe navigation on `.field-wrap`       |
 | `spray-charts.js`     | Team spray chart export                                              |
-| `play-log-import.js`  | Play-log import: roster matching, location→`(x,y)`, dedup, summary (planned — see `PLAY_LOG_IMPORT.md`) |
+| `play-log-import.js`  | Play-log import: roster matching, location→`(x,y)`, dedup, summary (see `PLAY_LOG_IMPORT.md`) |
 
 Stripe billing runs through Memberstack's native connection — no `js/stripe.js` or `stripe-webhook.js` Netlify function. See `DECISIONS.md` decision 4.
 
@@ -90,9 +93,9 @@ Stripe billing runs through Memberstack's native connection — no `js/stripe.js
 |---------------------------|-----------------------------------------------------------|
 | `openai-roster-import.js` | Receive image, call OpenAI Vision, return parsed roster   |
 | `ai-coach-brief.js`       | Receive recommendation context, return coaching brief     |
-| `openai-play-log-import.js` | Receive screenshot(s) + roster context, return structured plays for the coach's team only (planned — see `PLAY_LOG_IMPORT.md`) |
+| `openai-play-log-import.js` | Receive screenshot(s) + roster context, return structured plays for the coach's team only (see `PLAY_LOG_IMPORT.md`) |
 
-Both functions enforce a per-IP in-memory rate limit (10/min roster import, 30/min coach brief). The planned play-log import function will rate-limit at ~5/min (multi-image calls are heavier).
+All three functions enforce a per-IP in-memory rate limit, scaled to call cost: 30/min coach brief, 10/min roster import, 5/min play-log import (multi-image calls are heavier).
 
 ---
 
@@ -127,9 +130,9 @@ Defined in `.env.example`. Never exposed to frontend JavaScript.
 
 ---
 
-## Play-Log Import (planned)
+## Play-Log Import
 
-A planned feature lets a coach import play-by-play log screenshots from the Team
+Lets a coach import play-by-play log screenshots from the Team
 screen and turn them into **previous-game** Defensive Positioning Assistant data with no manual charting.
 The full spec — scope, AI extraction contract, roster matching, location→`(x,y)`
 rules, dedup, and import summary — lives in **`PLAY_LOG_IMPORT.md`**;
