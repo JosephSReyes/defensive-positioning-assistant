@@ -53,42 +53,10 @@ The **no-scroll requirement** is the sharpest of these, and it is worth stating 
 
 ## 3. System architecture
 
-```mermaid
-flowchart TB
-    subgraph CLIENT["Browser — static, vanilla JS, no framework, no runtime dependencies"]
-        direction TB
-        UI["Presentation<br/>ui.js · batter.js · spray-charts.js"]
-        GAME["Domain<br/>game.js · recommendations.js"]
-        STORE["Persistence<br/>storage.js — sole localStorage owner,<br/>schema-validated on read"]
-        AI["Model client<br/>ai.js — 1-hour response cache"]
-        IMP["Ingestion<br/>roster-import.js · play-log-import.js"]
-    end
-
-    subgraph FUNCS["Serverless functions — the trust boundary"]
-        direction TB
-        F1["openai-roster-import<br/>gpt-4o vision · 10 req/min/IP"]
-        F2["openai-play-log-import<br/>gpt-4o vision, multi-image · 5 req/min/IP"]
-        F3["ai-coach-brief<br/>gpt-4o-mini · 30 req/min/IP"]
-    end
-
-    AUTH["Hosted auth + billing provider"]
-    API[("OpenAI API")]
-
-    UI --> GAME --> STORE
-    GAME --> AI
-    IMP --> STORE
-    IMP -->|"base64 images"| F1
-    IMP -->|"base64 images"| F2
-    AI -->|"finished recommendation"| F3
-    F1 --> API
-    F2 --> API
-    F3 --> API
-    CLIENT --- AUTH
-
-    style FUNCS fill:#7c3aed,color:#fff
-    style STORE fill:#0891b2,color:#fff
-    style API fill:#334155,color:#fff
-```
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/diagrams/architecture-dark.svg">
+  <img alt="System architecture: a static vanilla-JavaScript client above a trust boundary, with three serverless functions below it holding the only API key and making every model call." src="docs/diagrams/architecture-light.svg">
+</picture>
 
 Three properties are load-bearing:
 
@@ -104,23 +72,10 @@ Three properties are load-bearing:
 
 This is the question every AI application answers, usually implicitly. Here it was answered deliberately and the answer is narrow.
 
-```mermaid
-sequenceDiagram
-    participant C as Coach
-    participant R as recommendations.js<br/>(deterministic)
-    participant F as ai-coach-brief<br/>(serverless)
-    participant M as gpt-4o-mini
-
-    C->>R: taps a batter
-    R->>R: weight contacts — recency, outs at 0.65,<br/>extra-base bonus, current game 4× previous
-    R->>R: pull side, depth, hot/cold, bunt likelihood
-    R-->>C: fielder moves rendered — 0 ms, offline-capable
-    Note over C,R: The recommendation is complete and on screen<br/>before any model is contacted.
-    C->>F: taps the brief icon (optional)
-    F->>M: finished recommendation, marked authoritative,<br/>+ "do not modify or reinterpret it"
-    M-->>F: one or two sentences
-    F-->>C: escaped, length-capped, cached for 1 hour
-```
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/diagrams/model-boundary-dark.svg">
+  <img alt="Sequence diagram: the deterministic rules engine renders fielder moves instantly and offline; only afterwards, optionally, does a serverless function ask gpt-4o-mini to phrase the finished recommendation." src="docs/diagrams/model-boundary-light.svg">
+</picture>
 
 **The rules engine produces the recommendation. The model receives it as a finished, authoritative input and is instructed only to phrase it.** The prompt labels the recommendation block *authoritative* and forbids reinterpretation. The model's output is escaped and length-capped before it can touch the DOM.
 
@@ -155,7 +110,7 @@ A server would have simplified sessions, allowed shared team data, and made rate
 
 **Chose:** `gpt-4o` for vision extraction, `gpt-4o-mini` capped at 150 output tokens for the brief. **Rejected:** one model everywhere.
 
-The brief is the frequently-called path and is a phrasing task with the analysis already done — the cheap model is not a compromise there, it is correct sizing. Vision extraction from a handwritten lineup card is the hard task and gets the capable model. Roster imports request `detail: low`; play-log screenshots, which are dense text, request `detail: high`. **Cost follows task difficulty rather than a single global choice.**
+The brief is the frequently-called path and is a phrasing task with the analysis already done — the cheap model is not a compromise there, it is correct sizing. Vision extraction is the hard task, reading a handwritten lineup card or a dense log screenshot, and gets the capable model at `detail: high`. **Cost follows task difficulty rather than a single global choice**, and the expensive path is the rare one: extraction runs a handful of times per season, while the brief is available on every batter.
 
 ### 5.3 Client-side cache with a TTL
 
@@ -187,6 +142,11 @@ This is the most transferable decision in the project, so it gets its own sectio
 
 ## 6. Eliminating a bug class instead of fixing a bug
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/diagrams/coordinate-space-dark.svg">
+  <img alt="Before and after: the field diagram as twenty positioned divs across three coordinate conventions, squashed to 4.8:1, versus one inline SVG in the same 0-100 space the hit data is stored in." src="docs/diagrams/coordinate-space-light.svg">
+</picture>
+
 **The symptom, reported from real use:** on some phones the base lines visibly drifted relative to the bases. The diamond stopped looking like a diamond.
 
 **The cause:** the field was drawn as roughly twenty positioned elements using *three different coordinate conventions at once* — percentages for most elements, fixed rotation angles for the foul lines, fixed pixels for the bases and circles. They agreed at exactly one aspect ratio. Every other viewport pulled them apart.
@@ -204,6 +164,11 @@ Now the drawing and the data cannot disagree, because they are the same coordina
 ---
 
 ## 7. Failure engineering: making model output degrade instead of break
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/diagrams/truncation-recovery-dark.svg">
+  <img alt="A truncated JSON array from the vision model: a brace-depth scanner recovers every complete object generated before the cut and returns them as a normal success." src="docs/diagrams/truncation-recovery-light.svg">
+</picture>
 
 **The report:** importing seven or more play-log screenshots failed with *"Could not read plays from the screenshots. Try clearer images."* Six worked. The images were fine.
 

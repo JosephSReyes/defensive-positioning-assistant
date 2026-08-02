@@ -35,6 +35,8 @@ defensive-positioning-assistant/
 │   ├── unit/
 │   ├── integration/
 │   └── e2e/
+├── docs/
+│   └── diagrams/          (light/dark SVG figures used by README.md and CASE_STUDY.md)
 ├── .env.example
 ├── netlify.toml
 ├── package.json

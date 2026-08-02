@@ -233,6 +233,24 @@
   - Tests: documentation-only change to published docs; no source, HTML, CSS, or data-model change. Full vitest suite re-run after the edits — **381 passing**, unchanged.
   - Noted, not changed (out of scope): `PROGRESS.md` is a ~50 KB internal build log that a reader arriving from `README.md` may open first; it is an accurate engineering record but not a reader-facing document. If the audience for this repository is external, consider linking readers explicitly to `CASE_STUDY.md` and leaving `PROGRESS.md` as the internal artifact it is.
 
+### Maintenance — Change Request: Replace Mermaid blocks with purpose-built SVG figures (post-Step-13)
+
+- [x] **Add four hand-built diagrams to the published documentation**
+  - Commit: _pending_
+  - What: added `docs/diagrams/` — four figures, each shipping a light and a dark file, swapped by `<picture>` + `prefers-color-scheme` so they follow the reader's GitHub theme. Replaced all three Mermaid blocks and added two figures that had no diagram before.
+    | Figure | Placement |
+    |---|---|
+    | `architecture` | `README.md` "Architecture" **and** `CASE_STUDY.md` §3 — the two Mermaid blocks were near-duplicates; one canonical figure keeps them from drifting apart |
+    | `model-boundary` | `CASE_STUDY.md` §4 (replaces the sequence diagram) |
+    | `coordinate-space` | `CASE_STUDY.md` §6 (new) — the before/after that prose cannot carry |
+    | `truncation-recovery` | `CASE_STUDY.md` §7 (new) |
+  - Verified before publishing: no `<script>`, no external font/image/`href="http"` reference, no `foreignObject`, no event handlers — the figures are self-contained and safe to serve. All eight parse as well-formed XML and carry `<title>` + `<desc>`; each `<picture>` carries alt text. Text is real text (searchable, selectable, crisp at any zoom) in the system font stack, so GitHub renders it without loading a webfont. Confirmed the dark variants genuinely differ from the light ones. Scanned for client/team/player identifiers — none. All eight referenced paths resolve.
+  - **Corrections made during review (a factual error, and it originated in our own docs):**
+    - The architecture figure labelled roster import `gpt-4o · detail: low`. **The code uses `detail: 'high'` for both vision functions** (`openai-roster-import.js:102`, `openai-play-log-import.js:183`). The error traces back to the Step 8 note in this file ("uses `gpt-4o` with `detail: low` for cost efficiency"), which was carried into `CASE_STUDY.md` §5.2 without being checked against the source. Fixed in both SVGs and rewritten in §5.2 — the per-task cost argument now rests on model choice (`gpt-4o` vs `gpt-4o-mini`) and call frequency, which are true, rather than on an image-detail setting that is not. **The Step 8 note above is stale on this point; the code is authoritative.**
+    - The figure's auth box read "gates the app; no game data ever leaves the browser." True of the auth provider, but unqualified it reads as a global claim that the same diagram contradicts one box over, where the finished recommendation flows to `ai-coach-brief`. Tightened to "gates the app; it never sees rosters or game data."
+  - Everything else in all four figures was checked against source and is accurate: `RATE_MAX` 30/10/5, `MAX_IMAGES` 12, `max_tokens` 150 and 16000 (from 4000), the `×0.65` out weight, the current-vs-previous 4× contact weighting, and the field-sizing and alignment measurements.
+  - Tests: documentation and asset change only; no source, HTML, CSS, or data-model change. Full vitest suite re-run — **381 passing**, unchanged.
+
 ### Final Validation
 
 - [ ] **Step 12** — Create Full Regression Test Suite

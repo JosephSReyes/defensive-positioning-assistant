@@ -47,35 +47,10 @@ A season of already-recorded games can be backfilled by uploading screenshots of
 
 ## Architecture
 
-```mermaid
-flowchart TB
-    subgraph CLIENT["Browser — static, vanilla JS, no runtime dependencies"]
-        UI["ui.js · batter.js · spray-charts.js"]
-        GAME["game.js · recommendations.js"]
-        STORE["storage.js<br/>sole localStorage owner, schema-validated on read"]
-        AI["ai.js<br/>1-hour response cache"]
-        IMP["roster-import.js · play-log-import.js"]
-    end
-    subgraph FUNCS["Serverless functions — the trust boundary"]
-        F1["openai-roster-import<br/>gpt-4o vision · 10/min"]
-        F2["openai-play-log-import<br/>gpt-4o vision, multi-image · 5/min"]
-        F3["ai-coach-brief<br/>gpt-4o-mini · 30/min"]
-    end
-    AUTH["Hosted auth + billing"]
-
-    UI --> GAME --> STORE
-    GAME --> AI
-    IMP --> F1
-    IMP --> F2
-    AI --> F3
-    F1 --> API[("OpenAI API")]
-    F2 --> API
-    F3 --> API
-    CLIENT --- AUTH
-
-    style FUNCS fill:#7c3aed,color:#fff
-    style STORE fill:#0891b2,color:#fff
-```
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/diagrams/architecture-dark.svg">
+  <img alt="System architecture: a static vanilla-JavaScript client above a trust boundary, with three serverless functions below it holding the only API key and making every model call." src="docs/diagrams/architecture-light.svg">
+</picture>
 
 **The core constraint is architectural, not incidental:** this stays a static site on vanilla JavaScript. No framework, no backend server, no client-side database. Every privileged operation crosses into a serverless function.
 
